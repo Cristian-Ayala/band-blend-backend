@@ -8,10 +8,10 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
-      - "5432"
+      - "5432:5432"
     volumes:
-      - ./database_structure.sql:/docker-entrypoint-initdb.d/01_database_structure.sql
-      - ./database_data.sql:/docker-entrypoint-initdb.d/02_database_data.sql
+      - ./backups/database_structure.sql:/docker-entrypoint-initdb.d/01_database_structure.sql
+      - ./backups/database_data.sql:/docker-entrypoint-initdb.d/02_database_data.sql
       - postgres-data:/var/lib/postgresql/data/
     networks:
       band-blend-network:
@@ -29,6 +29,7 @@ services:
       HASURA_GRAPHQL_V1_BOOLEAN_NULL_COLLAPSE: true
       HASURA_GRAPHQL_CORS_DOMAIN: ${HASURA_CORS_DOMAIN}
       HASURA_GRAPHQL_JWT_SECRET: ${HASURA_JWT_SECRET}
+      VIRTUAL_HOST: ${SUBDOMAIN_HASURA}
       LETSENCRYPT_HOST: ${SUBDOMAIN_HASURA}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL_MAIN}
     networks:
@@ -41,6 +42,10 @@ services:
 
 networks:
   band-blend-network:
+    name: band-blend-net
+    driver: bridge
+    ipam:
+      driver: default
   nginx-letsncrypt-net:
     external: true
 
