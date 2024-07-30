@@ -1,0 +1,13 @@
+<container-name> --> replace with the name of the container name given by command "docker ps"
+<user> --> replace with the user name of the database set in .env file when creating the container
+
+# backup only the structure
+timestamp=$(date +%Y-%m-%d_%H_%M_%S) && \
+docker exec -t <container-name> bash -c "pg_dump -U <user> -s postgres > /tmp/database_structure_${timestamp}.sql" && \
+docker cp <container-name>:/tmp/database_structure_${timestamp}.sql ./backups/
+
+
+# backup only data
+timestampdata=$(date +%Y-%m-%d_%H_%M_%S) && echo $timestampdata && \
+docker exec -t <container-name> bash -c "pg_dump -U <user> -a postgres > /tmp/database_data_${timestampdata}.sql" && \
+docker cp <container-name>:/tmp/database_data_${timestampdata}.sql ./backups/

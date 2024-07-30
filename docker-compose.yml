@@ -1,0 +1,48 @@
+version: "3.8"
+services:
+  postgres-db:
+    image: postgres:15.4-alpine3.17
+    restart: always
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432"
+    volumes:
+      - ./database_structure.sql:/docker-entrypoint-initdb.d/01_database_structure.sql
+      - ./database_data.sql:/docker-entrypoint-initdb.d/02_database_data.sql
+      - postgres-data:/var/lib/postgresql/data/
+    networks:
+      band-blend-network:
+
+  hasura:
+    image: hasura/graphql-engine:v2.36.1
+    restart: always
+    expose:
+      - "8080"
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-db:5432/postgres
+      DB_URL_FROM_ENV: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-db:5432/postgres
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true" # Enabling Hasura Console (for development purposes)
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_ADMIN_SECRET_KEY}
+      HASURA_GRAPHQL_V1_BOOLEAN_NULL_COLLAPSE: true
+      HASURA_GRAPHQL_CORS_DOMAIN: ${HASURA_CORS_DOMAIN}
+      HASURA_GRAPHQL_JWT_SECRET: ${HASURA_JWT_SECRET}
+      LETSENCRYPT_HOST: ${SUBDOMAIN_HASURA}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL_MAIN}
+    networks:
+      band-blend-network:
+      nginx-letsncrypt-net:
+        aliases:
+          - hasura
+    depends_on:
+      - postgres-db
+
+networks:
+  band-blend-network:
+  nginx-letsncrypt-net:
+    external: true
+
+volumes:
+  postgres-data:
