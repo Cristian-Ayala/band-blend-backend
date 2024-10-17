@@ -213,13 +213,90 @@ CREATE TABLE hdb_catalog.hdb_version (
 ALTER TABLE hdb_catalog.hdb_version OWNER TO cristian;
 
 --
+-- Name: band_members; Type: TABLE; Schema: public; Owner: cristian
+--
+
+CREATE TABLE public.band_members (
+    id integer NOT NULL,
+    first_name text NOT NULL,
+    last_name text NOT NULL,
+    role_id integer NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone,
+    active boolean DEFAULT true
+);
+
+
+ALTER TABLE public.band_members OWNER TO cristian;
+
+--
+-- Name: band_members_id_seq; Type: SEQUENCE; Schema: public; Owner: cristian
+--
+
+CREATE SEQUENCE public.band_members_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.band_members_id_seq OWNER TO cristian;
+
+--
+-- Name: band_members_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: cristian
+--
+
+ALTER SEQUENCE public.band_members_id_seq OWNED BY public.band_members.id;
+
+
+--
+-- Name: band_roles; Type: TABLE; Schema: public; Owner: cristian
+--
+
+CREATE TABLE public.band_roles (
+    id integer NOT NULL,
+    role_name text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone,
+    active boolean DEFAULT true NOT NULL
+);
+
+
+ALTER TABLE public.band_roles OWNER TO cristian;
+
+--
+-- Name: band_roles_id_seq; Type: SEQUENCE; Schema: public; Owner: cristian
+--
+
+CREATE SEQUENCE public.band_roles_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.band_roles_id_seq OWNER TO cristian;
+
+--
+-- Name: band_roles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: cristian
+--
+
+ALTER SEQUENCE public.band_roles_id_seq OWNED BY public.band_roles.id;
+
+
+--
 -- Name: event_songs; Type: TABLE; Schema: public; Owner: cristian
 --
 
 CREATE TABLE public.event_songs (
     event_id integer NOT NULL,
     song_id integer NOT NULL,
-    "order" integer
+    "order" integer,
+    member_id integer
 );
 
 
@@ -330,6 +407,20 @@ ALTER SEQUENCE public.songs_id_seq OWNED BY public.songs.id;
 
 
 --
+-- Name: band_members id; Type: DEFAULT; Schema: public; Owner: cristian
+--
+
+ALTER TABLE ONLY public.band_members ALTER COLUMN id SET DEFAULT nextval('public.band_members_id_seq'::regclass);
+
+
+--
+-- Name: band_roles id; Type: DEFAULT; Schema: public; Owner: cristian
+--
+
+ALTER TABLE ONLY public.band_roles ALTER COLUMN id SET DEFAULT nextval('public.band_roles_id_seq'::regclass);
+
+
+--
 -- Name: events id; Type: DEFAULT; Schema: public; Owner: cristian
 --
 
@@ -416,6 +507,30 @@ ALTER TABLE ONLY hdb_catalog.hdb_version
 
 
 --
+-- Name: band_members band_members_pkey; Type: CONSTRAINT; Schema: public; Owner: cristian
+--
+
+ALTER TABLE ONLY public.band_members
+    ADD CONSTRAINT band_members_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: band_roles band_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: cristian
+--
+
+ALTER TABLE ONLY public.band_roles
+    ADD CONSTRAINT band_roles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: band_roles band_roles_role_name_key; Type: CONSTRAINT; Schema: public; Owner: cristian
+--
+
+ALTER TABLE ONLY public.band_roles
+    ADD CONSTRAINT band_roles_role_name_key UNIQUE (role_name);
+
+
+--
 -- Name: event_songs event_songs_pkey; Type: CONSTRAINT; Schema: public; Owner: cristian
 --
 
@@ -472,6 +587,34 @@ CREATE INDEX hdb_scheduled_event_status ON hdb_catalog.hdb_scheduled_events USIN
 --
 
 CREATE UNIQUE INDEX hdb_version_one_row ON hdb_catalog.hdb_version USING btree (((version IS NOT NULL)));
+
+
+--
+-- Name: band_members set_public_band_members_updated_at; Type: TRIGGER; Schema: public; Owner: cristian
+--
+
+CREATE TRIGGER set_public_band_members_updated_at BEFORE UPDATE ON public.band_members FOR EACH ROW EXECUTE FUNCTION public.set_current_timestamp_updated_at();
+
+
+--
+-- Name: TRIGGER set_public_band_members_updated_at ON band_members; Type: COMMENT; Schema: public; Owner: cristian
+--
+
+COMMENT ON TRIGGER set_public_band_members_updated_at ON public.band_members IS 'trigger to set value of column "updated_at" to current timestamp on row update';
+
+
+--
+-- Name: band_roles set_public_band_roles_updated_at; Type: TRIGGER; Schema: public; Owner: cristian
+--
+
+CREATE TRIGGER set_public_band_roles_updated_at BEFORE UPDATE ON public.band_roles FOR EACH ROW EXECUTE FUNCTION public.set_current_timestamp_updated_at();
+
+
+--
+-- Name: TRIGGER set_public_band_roles_updated_at ON band_roles; Type: COMMENT; Schema: public; Owner: cristian
+--
+
+COMMENT ON TRIGGER set_public_band_roles_updated_at ON public.band_roles IS 'trigger to set value of column "updated_at" to current timestamp on row update';
 
 
 --
